@@ -78,7 +78,7 @@ int main() {
     BITMAPINFOHEADER bitmapInfoHeader;
     unsigned char *bitmapData;
     // ...
-    bitmapData = LoadBitmapFile("TestingImages/f5.bmp",&bitmapInfoHeader);
+    bitmapData = LoadBitmapFile("TestingImages/f4.bmp",&bitmapInfoHeader);
 }
 
 

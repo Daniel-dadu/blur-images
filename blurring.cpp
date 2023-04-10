@@ -2,9 +2,88 @@
 #include <stdlib.h>
 #include <iostream>
 #include <vector>
-// #define NUM_THREADS 100
+#include <omp.h>
+#define NUM_THREADS 50
 
 using namespace std;
+
+vector<vector<vector<unsigned char>>> add_pixels(vector<vector<vector<unsigned char>>> matrix, int mask, long alto, long ancho);
+void blur_image(vector<vector<vector<unsigned char>>> matrix, int mask, long alto, long ancho, FILE *outputImage);
+
+int main(){
+
+  omp_set_num_threads(NUM_THREADS);
+
+  int i;
+  {
+    #pragma omp for
+    for(int i = 11; i <= 13; i+=2){
+
+      FILE *image, *outputImage;
+      image = fopen("TestingImages/f4.bmp","rb"); // Imagen original a transformar
+      string title = "Mask_" + to_string(i) + ".bmp";
+      outputImage = fopen(title.c_str(), "wb"); // Imagen transformada
+      vector<vector<vector<unsigned char>>> matrix;
+      vector<vector<vector<unsigned char>>> matrixAddPixels;
+
+      unsigned char xx[138];
+
+      for(int j = 0; j < 138; j++){
+        xx[j] = fgetc(image);
+        fputc(xx[j], outputImage); // Copia cabecera a nueva imagen
+      }
+
+      int ancho = (long)xx[20]*65536 + (long)xx[19]*256 + (long)xx[18];
+      int alto = (long)xx[24]*65536 + (long)xx[23]*256 + (long)xx[22];
+      // cout << "alto img " << alto << endl;
+      // cout << "ancho img " << ancho << endl;
+
+      int padding = ancho % 4;
+
+      for(int i = 0; i < alto; i++){
+
+        vector<vector<unsigned char>> temporal;
+        unsigned char b, g, r;
+
+        for(int j = 0; j < ancho; j++){
+          vector<unsigned char> channels;
+          b = fgetc(image);
+          g = fgetc(image);
+          r = fgetc(image);
+          unsigned char pixel = ((0.21*r) + (0.72*g) + (0.07*b));
+          channels.push_back(pixel); // B
+          channels.push_back(pixel); // G
+          channels.push_back(pixel); // R
+          temporal.push_back(channels);
+        }
+
+        for(int j = 0; j < padding; j++){
+          fgetc(image);
+        }
+        
+        matrix.push_back(temporal);
+
+      }
+
+      matrixAddPixels = add_pixels(matrix, i, alto, ancho);
+      (void)blur_image(matrixAddPixels, i, alto, ancho, outputImage);
+
+      fclose(image);
+
+    }
+  }
+
+  // int i;
+  // {
+  //   #pragma omp for
+  //   for(int i = 11; i <= 11; i+=2){
+  //     (void)blur_image(matrixAddPixels, i, alto, ancho, outputImage);
+  //   }
+  // }
+
+  return 0;
+
+}
 
 vector<vector<vector<unsigned char>>> add_pixels(vector<vector<vector<unsigned char>>> matrix, int mask, long alto, long ancho) {
   unsigned char white_pixel = '0';
@@ -46,56 +125,11 @@ void blur_image(vector<vector<vector<unsigned char>>> matrix, int mask, long alt
       fputc(colorWeight, outputImage);
       fputc(colorWeight, outputImage);
     }
+
+    for(int j = 0; j < (ancho % 4); j++){
+      fputc('0', outputImage);
+    }
+
   }
   fclose(outputImage);
-}
-
-int main(){
-
-  // omp_set_num_threads(NUM_THREADS);
-  FILE *image, *outputImage;
-  image = fopen("TestingImages/f4.bmp","rb"); // Imagen original a transformar
-  outputImage = fopen("f3_blur.bmp","wb"); // Imagen transformada
-
-  long ancho, alto;
-  unsigned char xx[54];
-  vector<vector<vector<unsigned char>>> matrix;
-  
-  for(int i=0; i < 54; i++){
-    xx[i] = fgetc(image);
-    fputc(xx[i], outputImage); // Copia cabecera a nueva imagen
-  }
-
-  ancho = (long)xx[20]*65536 + (long)xx[19]*256 + (long)xx[18];
-  alto = (long)xx[24]*65536 + (long)xx[23]*256 + (long)xx[22];
-  cout << "alto img " << alto << endl;
-  cout << "ancho img " << ancho << endl;
-
-  for(int i = 0; i < alto; i++){
-
-    vector<vector<unsigned char>> temporal;
-    unsigned char b, g, r;
-
-    for(int j = 0; j < ancho; j++){
-      vector<unsigned char> channels;
-      b = fgetc(image);
-      g = fgetc(image);
-      r = fgetc(image);
-      unsigned char pixel = ((0.21*r) + (0.72*g) + (0.07*b));
-      channels.push_back(pixel); // B
-      channels.push_back(pixel); // G
-      channels.push_back(pixel); // R
-      temporal.push_back(channels);
-    }
-    
-    matrix.push_back(temporal);
-
-  }
-
-  fclose(image);
-  vector<vector<vector<unsigned char>>> matrixAddPixels = add_pixels(matrix, 100, alto, ancho);
-  blur_image(matrixAddPixels, 11, alto, ancho, outputImage);
-
-  return 0;
-
 }
