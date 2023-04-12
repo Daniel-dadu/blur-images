@@ -56,10 +56,12 @@ int main(){
 
   fclose(image);
 
-  int i;
+  int i, inicio = 11;
+  #pragma omp parallel private(i)
   {
-    #pragma omp for
-    for(int i = 11; i <= 15; i+=2){
+
+    #pragma omp for 
+    for(i = inicio; i <= 15; i+=2) {
       FILE *outputImage;
       string title = "Mask_" + to_string(i) + ".bmp";
       outputImage = fopen(title.c_str(), "wb"); // Imagen transformada
@@ -67,8 +69,10 @@ int main(){
       for(int j = 0; j < 138; j++){
         fputc(xx[j], outputImage); // Copia cabecera a nueva imagen
       }
-      (void)blur_image(matrix, i, alto, ancho, outputImage);
+
+      blur_image(matrix, i, alto, ancho, outputImage);
     }
+
   }
 
   return 0;
