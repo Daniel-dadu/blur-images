@@ -1,3 +1,9 @@
+// Otra versión del programa que tiene una función que agrega 
+// padding virtual en los bordes para hacer las máscaras más
+// grandes
+
+// Esta versión se despreció
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <iostream>
@@ -63,7 +69,7 @@ int main(){
   int i;
   {
     #pragma omp for
-    for(int i = 11; i <= 91; i+=2){
+    for(int i = 11; i <= 15; i+=2){
       FILE *outputImage;
       string title = "Mask_" + to_string(i) + ".bmp";
       outputImage = fopen(title.c_str(), "wb"); // Imagen transformada

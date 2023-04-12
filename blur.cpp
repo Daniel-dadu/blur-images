@@ -84,7 +84,7 @@ void blur_image(vector<vector<vector<unsigned char>>> matrix, int mask, long alt
   long lastRow = firstRow + alto - 1;
   long lastColumn = firstRow + ancho - 1;
   int outerPixels = (mask - 1) / 2;
-  unsigned char white_pixel = '0';
+  unsigned char dark_pixel = '0';
 
   for (long i = firstRow; i <= lastRow; i++) {
     for (long j = firstRow; j <= lastColumn; j++) {
@@ -92,7 +92,7 @@ void blur_image(vector<vector<vector<unsigned char>>> matrix, int mask, long alt
       for (long k = i - outerPixels; k <= i + outerPixels; k++) {
         for (long l = j - outerPixels; l <= j + outerPixels; l++) {
           if (k < firstRow || k > lastRow || l < firstRow || l > lastColumn) {
-            colorWeight += white_pixel;
+            colorWeight += dark_pixel;
           }
           else {
             colorWeight += matrix[k][l][0];
@@ -105,6 +105,7 @@ void blur_image(vector<vector<vector<unsigned char>>> matrix, int mask, long alt
       fputc(colorWeight, outputImage);
     }
 
+    // Para agregar el padding en caso de que sea necesario
     for(int j = 0; j < (ancho % 4); j++){
       fputc('0', outputImage);
     }
