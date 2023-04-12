@@ -63,7 +63,7 @@ int main(){
   int i;
   {
     #pragma omp for
-    for(int i = 11; i <= 15; i+=2){
+    for(int i = 11; i <= 91; i+=2){
       FILE *outputImage;
       string title = "Mask_" + to_string(i) + ".bmp";
       outputImage = fopen(title.c_str(), "wb"); // Imagen transformada
